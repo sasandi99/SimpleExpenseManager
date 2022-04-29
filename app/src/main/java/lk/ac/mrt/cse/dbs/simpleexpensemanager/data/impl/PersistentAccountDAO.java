@@ -45,6 +45,8 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
                 accNums.add(cursor.getString(0));
             } while (cursor.moveToNext());
         }
+        cursor.close();
+        sqLiteDatabase.close();
         return accNums;
     }
 
@@ -64,6 +66,8 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
                 accs.add(account);
             } while (cursor.moveToNext());
         }
+        cursor.close();
+        sqLiteDatabase.close();
         return accs;
     }
 
@@ -78,8 +82,12 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
             account.setBankName(cursor.getString(1));
             account.setAccountHolderName(cursor.getString(2));
             account.setBalance(Double.parseDouble(cursor.getString(3)));
+            cursor.close();
+            sqLiteDatabase.close();
             return account;
         }
+        cursor.close();
+        sqLiteDatabase.close();
         String msg = "Account " + accountNo + " is invalid.";
         throw new InvalidAccountException(msg);
     }
@@ -97,7 +105,7 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
         contentValues.put("accountHolderName", accountHolderName);
         contentValues.put("balance", balance);
         sqLiteDatabase.insert("Account", null, contentValues);
-
+        sqLiteDatabase.close();
     }
 
     @Override
@@ -107,8 +115,12 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
         Cursor cursor = sqLiteDatabase.rawQuery(query, null);
         if (cursor.moveToFirst()){
             sqLiteDatabase.delete("Account", "accountNo=?", new String[]{accountNo});
+            cursor.close();
+            sqLiteDatabase.close();
             return;
         }
+        cursor.close();
+        sqLiteDatabase.close();
         String msg = "Account " + accountNo + " is invalid.";
         throw new InvalidAccountException(msg);
     }
@@ -131,8 +143,12 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
             }
             String stmt = "update Account set balance = " + newBalance + " where accountNo = " + "'" + accountNo + "'";
             sqLiteDatabase.execSQL(stmt);
+            cursor.close();
+            sqLiteDatabase.close();
             return;
         }
+        cursor.close();
+        sqLiteDatabase.close();
         String msg = "Account " + accountNo + " is invalid.";
         throw new InvalidAccountException(msg);
     }

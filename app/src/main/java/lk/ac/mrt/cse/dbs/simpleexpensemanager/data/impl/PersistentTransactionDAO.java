@@ -47,41 +47,11 @@ public class PersistentTransactionDAO extends SQLiteOpenHelper implements Transa
         contentValues.put("expenseType", expenseType.toString());
         contentValues.put("amount", amount);
         sqLiteDatabase.insert("Transactions", null, contentValues);
+        sqLiteDatabase.close();
     }
 
-    @Override
-    public List<Transaction> getAllTransactionLogs() {
+    private List<Transaction> getTransList(Cursor cursor) {
         List<Transaction> trans = new ArrayList<Transaction>();
-        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        String query = "select * from Transactions";
-        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
-        if (cursor.moveToFirst()){
-            do {
-                Transaction transaction = new Transaction(null, null, null, 0);
-                String date = cursor.getString(0);
-                try {
-                    Date dateObj = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH).parse(date);
-                    transaction.setDate(dateObj);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                transaction.setAccountNo(cursor.getString(1));
-                String enumVal = cursor.getString(2);
-                ExpenseType expenseType = ExpenseType.valueOf(enumVal);
-                transaction.setExpenseType(expenseType);
-                transaction.setAmount(Double.parseDouble(cursor.getString(3)));
-                trans.add(transaction);
-            } while (cursor.moveToNext());
-        }
-        return trans;
-    }
-
-    @Override
-    public List<Transaction> getPaginatedTransactionLogs(int limit) {
-        List<Transaction> trans = new ArrayList<Transaction>();
-        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        String query = "select * from Transactions limit " + String.valueOf(limit);
-        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
         if (cursor.moveToFirst()){
             do {
                 Transaction transaction = new Transaction(null, null, null, 0);
@@ -100,6 +70,27 @@ public class PersistentTransactionDAO extends SQLiteOpenHelper implements Transa
                 trans.add(transaction);
             } while (cursor.moveToNext());
         }
+        return trans;
+    }
+    @Override
+    public List<Transaction> getAllTransactionLogs() {
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        String query = "select * from Transactions";
+        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
+        List<Transaction> trans =  this.getTransList(cursor);
+        cursor.close();
+        sqLiteDatabase.close();
+        return trans;
+    }
+
+    @Override
+    public List<Transaction> getPaginatedTransactionLogs(int limit) {
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        String query = "select * from Transactions limit " + String.valueOf(limit);
+        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
+        List<Transaction> trans =  this.getTransList(cursor);
+        cursor.close();
+        sqLiteDatabase.close();
         return trans;
     }
 }
