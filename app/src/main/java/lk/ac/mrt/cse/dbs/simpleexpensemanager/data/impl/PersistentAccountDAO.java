@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -99,12 +100,18 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
         String bankName = account.getBankName();
         String accountHolderName = account.getAccountHolderName();
         Double balance = account.getBalance();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("accountNo", accountNo);
-        contentValues.put("bankName", bankName);
-        contentValues.put("accountHolderName", accountHolderName);
-        contentValues.put("balance", balance);
-        sqLiteDatabase.insert("Account", null, contentValues);
+        String query = "insert into Account (accountNo, bankName, accountHolderName, balance) values (?, ?, ?, ?)";
+        SQLiteStatement statement = sqLiteDatabase.compileStatement(query);
+        statement.bindString(1, accountNo);
+        statement.bindString(2, bankName);
+        statement.bindString(3, accountHolderName);
+        statement.bindDouble(4, balance);
+        try{
+            statement.executeInsert();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        statement.close();
         sqLiteDatabase.close();
     }
 
@@ -128,8 +135,11 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        String query = "select balance from Account where accountNo = " + "'" + accountNo + "'";
-        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
+        String table = "Account";
+        String[] columnToReturn = {"balance"};
+        String condition = "accountNo = ?";
+        String[] selectionArgs = {accountNo};
+        Cursor cursor = sqLiteDatabase.query(table, columnToReturn, condition, selectionArgs, null, null, null);
         if (cursor.moveToFirst()){
             Double newBalance = null;
             Double balance = Double.parseDouble(cursor.getString(0));
@@ -141,8 +151,12 @@ public class PersistentAccountDAO extends SQLiteOpenHelper implements AccountDAO
                     newBalance = balance + amount;
                     break;
             }
-            String stmt = "update Account set balance = " + newBalance + " where accountNo = " + "'" + accountNo + "'";
-            sqLiteDatabase.execSQL(stmt);
+            String sql = "update Account set balance = ? where accountNo = ?";
+            SQLiteStatement statement = sqLiteDatabase.compileStatement(sql);
+            statement.bindDouble(1, newBalance);
+            statement.bindString(2, accountNo);
+            statement.executeUpdateDelete();
+            statement.close();
             cursor.close();
             sqLiteDatabase.close();
             return;

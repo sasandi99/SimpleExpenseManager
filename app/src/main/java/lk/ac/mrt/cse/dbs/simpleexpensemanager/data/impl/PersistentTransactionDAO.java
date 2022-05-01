@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.support.annotation.Nullable;
 
 import java.text.ParseException;
@@ -40,13 +41,15 @@ public class PersistentTransactionDAO extends SQLiteOpenHelper implements Transa
     @Override
     public void logTransaction(Date date, String accountNo, ExpenseType expenseType, double amount) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        ContentValues contentValues = new ContentValues();
         String strDate =  new SimpleDateFormat("dd-MM-yyyy").format(date);
-        contentValues.put("date", strDate);
-        contentValues.put("accountNo", accountNo);
-        contentValues.put("expenseType", expenseType.toString());
-        contentValues.put("amount", amount);
-        sqLiteDatabase.insert("Transactions", null, contentValues);
+        String query = "insert into Transactions (date, accountNo, expenseType, amount) values (?, ?, ?, ?)";
+        SQLiteStatement statement = sqLiteDatabase.compileStatement(query);
+        statement.bindString(1, strDate);
+        statement.bindString(2, accountNo);
+        statement.bindString(3, expenseType.toString());
+        statement.bindDouble(4, amount);
+        statement.executeInsert();
+        statement.close();
         sqLiteDatabase.close();
     }
 
