@@ -21,10 +21,10 @@ public class PersistentDemoExpenseManager extends ExpenseManager{
 
     @Override
     public void setup() {
-        TransactionDAO persistentTransactionDAO = new PersistentTransactionDAO(this.context, "Expense.db",null, 1);
+        TransactionDAO persistentTransactionDAO = new PersistentTransactionDAO(this.context, "190228N.db",null, 1);
         setTransactionsDAO(persistentTransactionDAO);
 
-        AccountDAO persistentAccountDAO = new PersistentAccountDAO(this.context, "Expense.db", null, 1);
+        AccountDAO persistentAccountDAO = new PersistentAccountDAO(this.context, "190228N.db", null, 1);
         setAccountsDAO(persistentAccountDAO);
 
         // dummy data
