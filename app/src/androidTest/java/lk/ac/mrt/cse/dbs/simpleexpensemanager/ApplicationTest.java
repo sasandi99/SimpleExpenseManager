@@ -51,7 +51,7 @@ public class ApplicationTest{
     }
 
     @Test
-    public void newTransactionTest(){
+    public void newIncomeTransactionTest(){
         int currCount = expenseManager.getTransactionLogs().size();
         try {
             expenseManager.updateAccountBalance("78945Z", 7, 7, 2010, ExpenseType.INCOME, "400.0");
@@ -61,5 +61,15 @@ public class ApplicationTest{
         assertEquals(currCount +1,expenseManager.getTransactionLogs().size());
     }
 
-
+    @Test
+    public void newExpenseTransactionTest(){
+        int currCount = expenseManager.getTransactionLogs().size();
+        try {
+            expenseManager.updateAccountBalance("12345A", 10, 2, 2020, ExpenseType.EXPENSE, "1500.0");
+        } catch (InvalidAccountException e) {
+            e.printStackTrace();
+        }
+        assertEquals(currCount +1,expenseManager.getTransactionLogs().size());
+    }
+    
 }
